@@ -1,6 +1,8 @@
 <script>
 import axios from "axios";
 import NoticiasApi from "../api/noticias.js";
+import FiltrosApi from "../api/filtro.js";
+const filtrosapi = new FiltrosApi();
 const noticiasapi = new NoticiasApi();
 export default {
   components: {}
