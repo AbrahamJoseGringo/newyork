@@ -1,53 +1,72 @@
 <script>
-import axios from 'axios';
-import NoticiasApi from '../api/noticias.js';
-import FiltrosApi from "../api/filtro.js";
-const filtrosapi = new FiltrosApi();
-const noticiasapi = new NoticiasApi();
+import { getNews } from "../api/noticias";
 
 export default {
-  props: ["id"],
   data() {
     return {
-      archiveMetadata: {},
-      articles: {},
-      bestSellers: {},
-      popularArticles: {},
-      rssFeed: {},
-      timesTags: [],
+      articles: []
     };
   },
-  components: {
-      NoticiasApi,
-  },
-  async created() {
-        this.archiveMetadata = await getArchiveMetadata();
-        this.articles = await articleSearch();
-        this.bestSellers = await getBestSellersList();
-        this.popularArticles = await getMostPopular('all-sections');
-        this.rssFeed = await getRSSFeed('home');
-        this.timesTags = await getTimesTags();
-        const url = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${query}&fq=${filter}&api-key=PzVx7XkcdxuMF9dzRGLMVbamDjFfQ6KQ&language=pt-BR`;
-        const { data } = await axios.get(url);
-        this.archiveMetadata = data;
-  },
-  methods: {
-    getMostPopular(poster_path) {
-      return `https://image.tmdb.org/t/p/w500${poster_path}`;
+  async mounted() {
+    try {
+      this.articles = await getNews("your-section");
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
   }
 };
 </script>
+
 <template>
-  <main class="PaginaNoticia">
-    <div class="DescricaoNoticia">
-      <NoticiasApi
-      v-model="archiveMetadata"
-      :NomearquiveMetadata="archiveMetadata.title"
-      :key="archiveMetadata.id"
-      :Noticia="archiveMetadata.overview"/>
+  <div class="container">
+    <div v-for="(article, index) in articles" :key="index" class="card mb-3 head">
+      <div class="row g-0">
+       
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 class="card-title">{{ article.title }}</h5>
+            <p class="card-text">{{ article.abstract }}</p>
+            <a :href="article.url" class="continue">Continue</a>
+            <p class="card-text"><small class="text-muted">{{ article.published_date }}</small></p>
+          </div>
+        </div>
+       
+        <div class="col-md-4">
+          <img :src="article.multimedia[2].url" class="card-img" alt="No image">
+        </div>
+      </div>
     </div>
-    <img class="poster" :class="getPosterUrl(filme.poster_path)" alt="" />
-  </main>
+  </div>
 </template>
 
+
+<style scoped>
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.card {
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 1rem;
+}
+
+.continue {
+  text-decoration: none;
+  color: blue;
+  font-weight: bold;
+}
+
+.card-img {
+  width: 100%;
+  height: auto;
+}
+</style>
